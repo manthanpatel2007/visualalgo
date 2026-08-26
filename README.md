@@ -5,13 +5,7 @@ An interactive **Sorting and Searching Algorithm Visualizer** built with pure **
 
 ## 🔗 Live Demo
 
-> Add your live demo link here (GitHub Pages / Netlify / Vercel)
-
-```
-https://your-username.github.io/algorithm-arena/
-```
-
----
+> live demo link here ( Netlify:  https://visualaigo.netlify.app/ )
 
 ## 📌 Project Overview
 
