@@ -1,38 +1,37 @@
 /* =========================================================
    ALGORITHM ARENA
-   Pure Vanilla JavaScript
-   No backend
-   ========================================================= */
+   Vanilla JavaScript
+========================================================= */
 
 
-/* ================= STATE ================= */
+/* =========================================================
+   STATE
+========================================================= */
 
 let array = [];
-
 let bars = [];
 
-let currentAlgo = "bubble";
-
 let isPlaying = false;
-
 let isPaused = false;
-
 let stopRequested = false;
 
 let speedMs = 40;
 
+let currentAlgo = "bubble";
+
 let comparisonCount = 0;
-
 let swapCount = 0;
+let stepCount = 0;
 
 
-/* ================= DOM ================= */
+/* =========================================================
+   DOM
+========================================================= */
 
-const barsContainer =
-    document.getElementById("barsContainer");
+const barsContainer = document.getElementById("barsContainer");
 
-const statusText =
-    document.getElementById("statusText");
+const statusText = document.getElementById("statusText");
+const stepText = document.getElementById("stepText");
 
 const searchTargetWrap =
     document.getElementById("searchTargetWrap");
@@ -67,14 +66,17 @@ const cTime =
 const cSpace =
     document.getElementById("cSpace");
 
+const visualizationTitle =
+    document.getElementById("visualizationTitle");
+
+const infoType =
+    document.getElementById("infoType");
+
 const infoTitle =
     document.getElementById("infoTitle");
 
 const infoDesc =
     document.getElementById("infoDesc");
-
-const infoType =
-    document.getElementById("infoType");
 
 const bestCase =
     document.getElementById("bestCase");
@@ -107,24 +109,21 @@ const swapCountEl =
     document.getElementById("swapCount");
 
 
-/* ================= ALGORITHM METADATA ================= */
+/* =========================================================
+   ALGORITHM INFORMATION
+========================================================= */
 
 const ALGO_META = {
 
     bubble: {
-
         name: "Bubble Sort",
-
         type: "sort",
 
         time: "O(n²)",
-
         space: "O(1)",
 
         best: "O(n)",
-
         average: "O(n²)",
-
         worst: "O(n²)",
 
         stable: "Yes",
@@ -133,24 +132,19 @@ const ALGO_META = {
             "Repeatedly compares adjacent elements and swaps them when they are in the wrong order.",
 
         how:
-            "Bubble Sort repeatedly walks through the array. During every pass, larger elements move toward the end. After each pass, the largest remaining element reaches its correct position."
+            "Bubble Sort compares neighboring elements. After every pass, the largest unsorted element moves toward the end of the array."
     },
 
 
     selection: {
-
         name: "Selection Sort",
-
         type: "sort",
 
         time: "O(n²)",
-
         space: "O(1)",
 
         best: "O(n²)",
-
         average: "O(n²)",
-
         worst: "O(n²)",
 
         stable: "No",
@@ -159,169 +153,162 @@ const ALGO_META = {
             "Finds the smallest element in the unsorted portion and places it at the beginning.",
 
         how:
-            "Selection Sort divides the array into sorted and unsorted portions. It searches for the minimum value in the unsorted portion and swaps it with the first unsorted element."
+            "Selection Sort divides the array into sorted and unsorted portions. It repeatedly finds the minimum value and swaps it into the next position."
     },
 
 
     insertion: {
-
         name: "Insertion Sort",
-
         type: "sort",
 
         time: "O(n²)",
-
         space: "O(1)",
 
         best: "O(n)",
-
         average: "O(n²)",
-
         worst: "O(n²)",
 
         stable: "Yes",
 
         desc:
-            "Builds the sorted array one element at a time by inserting each element into its correct position.",
+            "Builds the sorted portion one element at a time by inserting each value into its correct position.",
 
         how:
-            "Insertion Sort assumes the first element is sorted. It then takes the next element and shifts larger elements to the right until the correct position is found."
+            "Insertion Sort takes one element at a time and moves it left until it reaches the correct position among the already sorted elements."
     },
 
 
     merge: {
-
         name: "Merge Sort",
-
         type: "sort",
 
         time: "O(n log n)",
-
         space: "O(n)",
 
         best: "O(n log n)",
-
         average: "O(n log n)",
-
         worst: "O(n log n)",
 
         stable: "Yes",
 
         desc:
-            "Divides the array into smaller halves, sorts them recursively, and merges the sorted halves.",
+            "Divides the array into smaller halves, sorts them, and merges the sorted halves together.",
 
         how:
-            "Merge Sort uses divide and conquer. The array is repeatedly divided into halves until single elements remain. These small arrays are then merged in sorted order."
+            "Merge Sort uses divide and conquer. It repeatedly splits the array into halves and then merges those halves in sorted order."
     },
 
 
     quick: {
-
         name: "Quick Sort",
-
         type: "sort",
 
-        time: "O(n log n) avg",
-
+        time: "O(n log n)",
         space: "O(log n)",
 
         best: "O(n log n)",
-
         average: "O(n log n)",
-
         worst: "O(n²)",
 
         stable: "No",
 
         desc:
-            "Chooses a pivot and partitions the array around that pivot before recursively sorting both sides.",
+            "Chooses a pivot and partitions the array so smaller elements go left and larger elements go right.",
 
         how:
-            "Quick Sort selects a pivot. Elements smaller than the pivot move to the left, while larger elements move to the right. The same process is recursively applied to both partitions."
+            "Quick Sort selects a pivot, partitions the array around it, and recursively sorts the two resulting sections."
     },
 
 
     heap: {
-
         name: "Heap Sort",
-
         type: "sort",
 
         time: "O(n log n)",
-
         space: "O(1)",
 
         best: "O(n log n)",
-
         average: "O(n log n)",
-
         worst: "O(n log n)",
 
         stable: "No",
 
         desc:
-            "Builds a max heap and repeatedly moves the largest element to the end of the array.",
+            "Builds a heap and repeatedly moves the largest element to its final position.",
 
         how:
-            "Heap Sort first converts the array into a max heap. The root contains the largest value. It swaps the root with the last element and rebuilds the heap repeatedly."
+            "Heap Sort first creates a max heap. It then repeatedly removes the largest value and places it at the end of the array."
     },
 
 
     linear: {
-
         name: "Linear Search",
-
         type: "search",
 
         time: "O(n)",
-
         space: "O(1)",
 
         best: "O(1)",
-
         average: "O(n)",
-
         worst: "O(n)",
 
-        stable: "N/A",
+        stable: "—",
 
         desc:
-            "Checks every element one by one until the target is found or the array ends.",
+            "Checks every element from left to right until the target is found or the array ends.",
 
         how:
-            "Linear Search starts at index 0 and checks each element sequentially. It works even when the array is unsorted."
+            "Linear Search starts at the first element and checks each value one by one until it finds the target."
     },
 
 
     binary: {
-
         name: "Binary Search",
-
         type: "search",
 
         time: "O(log n)",
-
         space: "O(1)",
 
         best: "O(1)",
-
         average: "O(log n)",
-
         worst: "O(log n)",
 
-        stable: "N/A",
+        stable: "—",
 
         desc:
-            "Repeatedly divides a sorted array in half to quickly locate a target value.",
+            "Searches a sorted array by repeatedly dividing the search range in half.",
 
         how:
-            "Binary Search checks the middle element. If the target is larger, the left half is discarded. If it is smaller, the right half is discarded. This continues until the target is found."
+            "Binary Search checks the middle element. If the target is smaller, it searches the left half; otherwise it searches the right half."
     }
 
 };
 
 
-/* ================= UTILITY ================= */
+/* =========================================================
+   SPEED
+========================================================= */
+
+const SPEED_LABELS = {
+    1: "Slowest",
+    2: "Slow",
+    3: "Normal",
+    4: "Fast",
+    5: "Fastest"
+};
+
+const SPEED_MS = {
+    1: 140,
+    2: 80,
+    3: 40,
+    4: 18,
+    5: 6
+};
+
+
+/* =========================================================
+   ARRAY
+========================================================= */
 
 function generateArray(size) {
 
@@ -330,7 +317,7 @@ function generateArray(size) {
         () => Math.floor(Math.random() * 94) + 6
     );
 
-    resetStatistics();
+    resetCounters();
 
     renderBars();
 
@@ -342,10 +329,9 @@ function renderBars() {
 
     barsContainer.innerHTML = "";
 
-    bars = array.map(value => {
+    bars = array.map((value) => {
 
-        const bar =
-            document.createElement("div");
+        const bar = document.createElement("div");
 
         bar.className = "bar";
 
@@ -372,33 +358,46 @@ function updateBar(index) {
 }
 
 
-function clearBarStates() {
+/* =========================================================
+   COUNTERS
+========================================================= */
 
-    bars.forEach(bar => {
-
-        bar.classList.remove(
-            "compare",
-            "pivot",
-            "sorted",
-            "found",
-            "discarded"
-        );
-
-    });
-}
-
-
-function resetStatistics() {
+function resetCounters() {
 
     comparisonCount = 0;
-
     swapCount = 0;
+    stepCount = 0;
 
-    updateStatistics();
+    updateCounters();
 }
 
 
-function updateStatistics() {
+function addComparison() {
+
+    comparisonCount++;
+
+    updateCounters();
+}
+
+
+function addSwap() {
+
+    swapCount++;
+
+    updateCounters();
+}
+
+
+function nextStep() {
+
+    stepCount++;
+
+    stepText.textContent =
+        `Step ${stepCount}`;
+}
+
+
+function updateCounters() {
 
     comparisonCountEl.textContent =
         comparisonCount;
@@ -408,12 +407,9 @@ function updateStatistics() {
 }
 
 
-function setStatus(message) {
-
-    statusText.textContent =
-        message;
-}
-
+/* =========================================================
+   ARRAY INFO
+========================================================= */
 
 function updateArrayInfo() {
 
@@ -425,70 +421,75 @@ function updateArrayInfo() {
 }
 
 
-/* ================= ASYNC CONTROL ================= */
+/* =========================================================
+   BAR STATES
+========================================================= */
+
+function clearBarStates() {
+
+    bars.forEach(bar => {
+
+        bar.classList.remove(
+            "compare",
+            "pivot",
+            "sorted",
+            "found",
+            "discarded"
+        );
+    });
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function setStatus(message) {
+
+    statusText.textContent =
+        message;
+}
+
 
 function sleep(ms) {
 
     return new Promise(resolve => {
 
-        const wait = () => {
+        const check = () => {
 
             if (stopRequested) {
-
                 resolve();
-
                 return;
             }
 
             if (isPaused) {
-
-                setTimeout(wait, 50);
-
+                setTimeout(check, 60);
                 return;
             }
 
             setTimeout(resolve, ms);
         };
 
-        wait();
+        check();
     });
-}
-
-
-function compare() {
-
-    comparisonCount++;
-
-    updateStatistics();
 }
 
 
 function swap(i, j) {
 
-    [
-        array[i],
-        array[j]
-    ] = [
-        array[j],
-        array[i]
-    ];
+    [array[i], array[j]] =
+        [array[j], array[i]];
 
     updateBar(i);
-
     updateBar(j);
 
-    swapCount++;
-
-    updateStatistics();
+    addSwap();
 }
 
 
 /* =========================================================
-   SORTING ALGORITHMS
-   ========================================================= */
-
-
-/* ================= BUBBLE SORT ================= */
+   BUBBLE SORT
+========================================================= */
 
 async function bubbleSort() {
 
@@ -509,14 +510,14 @@ async function bubbleSort() {
         ) {
 
             bars[j].classList.add("compare");
-
             bars[j + 1].classList.add("compare");
 
             setStatus(
                 `Comparing index ${j} and ${j + 1}`
             );
 
-            compare();
+            addComparison();
+            nextStep();
 
             await sleep(speedMs);
 
@@ -528,7 +529,6 @@ async function bubbleSort() {
             }
 
             bars[j].classList.remove("compare");
-
             bars[j + 1].classList.remove("compare");
         }
 
@@ -546,7 +546,9 @@ async function bubbleSort() {
 }
 
 
-/* ================= SELECTION SORT ================= */
+/* =========================================================
+   SELECTION SORT
+========================================================= */
 
 async function selectionSort() {
 
@@ -571,20 +573,23 @@ async function selectionSort() {
             bars[j].classList.add("compare");
 
             setStatus(
-                `Searching minimum from index ${i}`
+                `Finding minimum — checking index ${j}`
             );
 
-            compare();
+            addComparison();
+            nextStep();
 
             await sleep(speedMs);
 
             if (array[j] < array[minIndex]) {
 
-                bars[minIndex].classList.remove("pivot");
+                bars[minIndex]
+                    .classList.remove("pivot");
 
                 minIndex = j;
 
-                bars[minIndex].classList.add("pivot");
+                bars[minIndex]
+                    .classList.add("pivot");
             }
 
             bars[j].classList.remove("compare");
@@ -595,9 +600,11 @@ async function selectionSort() {
             swap(i, minIndex);
         }
 
-        bars[minIndex].classList.remove("pivot");
+        bars[minIndex]
+            .classList.remove("pivot");
 
-        bars[i].classList.add("sorted");
+        bars[i]
+            .classList.add("sorted");
     }
 
     if (!stopRequested) {
@@ -609,11 +616,15 @@ async function selectionSort() {
 }
 
 
-/* ================= INSERTION SORT ================= */
+/* =========================================================
+   INSERTION SORT
+========================================================= */
 
 async function insertionSort() {
 
     const n = array.length;
+
+    if (n === 0) return;
 
     bars[0].classList.add("sorted");
 
@@ -625,15 +636,17 @@ async function insertionSort() {
 
         const key = array[i];
 
-        let j = i - 1;
-
         bars[i].classList.add("pivot");
 
         setStatus(
-            `Inserting value ${key}`
+            `Inserting value ${key} at index ${i}`
         );
 
+        nextStep();
+
         await sleep(speedMs);
+
+        let j = i - 1;
 
         while (
             j >= 0 &&
@@ -641,7 +654,7 @@ async function insertionSort() {
             !stopRequested
         ) {
 
-            compare();
+            addComparison();
 
             bars[j].classList.add("compare");
 
@@ -649,11 +662,17 @@ async function insertionSort() {
 
             updateBar(j + 1);
 
+            addSwap();
+
             await sleep(speedMs);
 
             bars[j].classList.remove("compare");
 
             j--;
+        }
+
+        if (j >= 0) {
+            addComparison();
         }
 
         array[j + 1] = key;
@@ -667,35 +686,35 @@ async function insertionSort() {
             k <= i;
             k++
         ) {
-
             bars[k].classList.add("sorted");
         }
+    }
 
-        updateArrayInfo();
+    if (!stopRequested) {
+
+        bars.forEach(bar =>
+            bar.classList.add("sorted")
+        );
     }
 }
 
 
-/* ================= MERGE SORT ================= */
+/* =========================================================
+   MERGE SORT
+========================================================= */
 
 async function mergeSort() {
 
-    async function merge(
-        left,
-        middle,
-        right
-    ) {
+    async function merge(left, mid, right) {
 
         const leftPart =
-            array.slice(left, middle + 1);
+            array.slice(left, mid + 1);
 
         const rightPart =
-            array.slice(middle + 1, right + 1);
+            array.slice(mid + 1, right + 1);
 
         let i = 0;
-
         let j = 0;
-
         let k = left;
 
         while (
@@ -706,26 +725,24 @@ async function mergeSort() {
 
             bars[k].classList.add("compare");
 
-            compare();
-
             setStatus(
-                `Merging [${left}, ${right}]`
+                `Merging range [${left}, ${right}]`
             );
+
+            addComparison();
+            nextStep();
 
             await sleep(speedMs);
 
             if (
-                leftPart[i] <=
-                rightPart[j]
+                leftPart[i] <= rightPart[j]
             ) {
 
-                array[k] =
-                    leftPart[i++];
+                array[k] = leftPart[i++];
 
             } else {
 
-                array[k] =
-                    rightPart[j++];
+                array[k] = rightPart[j++];
             }
 
             updateBar(k);
@@ -748,7 +765,7 @@ async function mergeSort() {
 
             bars[k].classList.add("compare");
 
-            await sleep(speedMs);
+            await sleep(speedMs / 2);
 
             bars[k].classList.remove("compare");
 
@@ -768,7 +785,7 @@ async function mergeSort() {
 
             bars[k].classList.add("compare");
 
-            await sleep(speedMs);
+            await sleep(speedMs / 2);
 
             bars[k].classList.remove("compare");
 
@@ -786,20 +803,14 @@ async function mergeSort() {
             return;
         }
 
-        const middle =
-            Math.floor(
-                (left + right) / 2
-            );
+        const mid =
+            Math.floor((left + right) / 2);
 
-        await sort(left, middle);
+        await sort(left, mid);
 
-        await sort(middle + 1, right);
+        await sort(mid + 1, right);
 
-        await merge(
-            left,
-            middle,
-            right
-        );
+        await merge(left, mid, right);
     }
 
 
@@ -807,7 +818,6 @@ async function mergeSort() {
         0,
         array.length - 1
     );
-
 
     if (!stopRequested) {
 
@@ -818,14 +828,13 @@ async function mergeSort() {
 }
 
 
-/* ================= QUICK SORT ================= */
+/* =========================================================
+   QUICK SORT
+========================================================= */
 
 async function quickSort() {
 
-    async function partition(
-        low,
-        high
-    ) {
+    async function partition(low, high) {
 
         const pivot =
             array[high];
@@ -842,17 +851,16 @@ async function quickSort() {
 
             bars[j].classList.add("compare");
 
-            compare();
-
             setStatus(
                 `Comparing with pivot ${pivot}`
             );
 
+            addComparison();
+            nextStep();
+
             await sleep(speedMs);
 
-            if (
-                array[j] < pivot
-            ) {
+            if (array[j] < pivot) {
 
                 i++;
 
@@ -865,24 +873,25 @@ async function quickSort() {
             bars[j].classList.remove("compare");
         }
 
+        if (i + 1 !== high) {
 
-        swap(
-            i + 1,
-            high
-        );
+            swap(
+                i + 1,
+                high
+            );
+        }
 
-        bars[high].classList.remove("pivot");
+        bars[high]
+            .classList.remove("pivot");
 
-        bars[i + 1].classList.add("sorted");
+        bars[i + 1]
+            .classList.add("sorted");
 
         return i + 1;
     }
 
 
-    async function sort(
-        low,
-        high
-    ) {
+    async function sort(low, high) {
 
         if (
             low < high &&
@@ -913,7 +922,6 @@ async function quickSort() {
         array.length - 1
     );
 
-
     if (!stopRequested) {
 
         bars.forEach(bar =>
@@ -923,17 +931,16 @@ async function quickSort() {
 }
 
 
-/* ================= HEAP SORT ================= */
+/* =========================================================
+   HEAP SORT
+========================================================= */
 
 async function heapSort() {
 
     const n = array.length;
 
 
-    async function heapify(
-        size,
-        root
-    ) {
+    async function heapify(size, root) {
 
         let largest = root;
 
@@ -943,9 +950,8 @@ async function heapSort() {
         const right =
             2 * root + 2;
 
-
-        bars[root].classList.add("pivot");
-
+        bars[root]
+            .classList.add("pivot");
 
         if (left < size) {
 
@@ -953,27 +959,25 @@ async function heapSort() {
                 .classList.add("compare");
         }
 
-
         if (right < size) {
 
             bars[right]
                 .classList.add("compare");
         }
 
-
         setStatus(
-            `Heapifying index ${root}`
+            `Heapifying at index ${root}`
         );
 
-        compare();
+        addComparison();
+        nextStep();
 
         await sleep(speedMs);
 
 
         if (
             left < size &&
-            array[left] >
-            array[largest]
+            array[left] > array[largest]
         ) {
 
             largest = left;
@@ -982,8 +986,7 @@ async function heapSort() {
 
         if (
             right < size &&
-            array[right] >
-            array[largest]
+            array[right] > array[largest]
         ) {
 
             largest = right;
@@ -995,7 +998,6 @@ async function heapSort() {
             bars[left]
                 .classList.remove("compare");
         }
-
 
         if (right < size) {
 
@@ -1010,7 +1012,10 @@ async function heapSort() {
 
         if (largest !== root) {
 
-            swap(root, largest);
+            swap(
+                root,
+                largest
+            );
 
             await heapify(
                 size,
@@ -1022,19 +1027,20 @@ async function heapSort() {
 
     for (
         let i = Math.floor(n / 2) - 1;
-        i >= 0 &&
-        !stopRequested;
+        i >= 0 && !stopRequested;
         i--
     ) {
 
-        await heapify(n, i);
+        await heapify(
+            n,
+            i
+        );
     }
 
 
     for (
         let i = n - 1;
-        i > 0 &&
-        !stopRequested;
+        i > 0 && !stopRequested;
         i--
     ) {
 
@@ -1043,9 +1049,16 @@ async function heapSort() {
         bars[i]
             .classList.add("sorted");
 
+        setStatus(
+            `Placed maximum at index ${i}`
+        );
+
         await sleep(speedMs);
 
-        await heapify(i, 0);
+        await heapify(
+            i,
+            0
+        );
     }
 
 
@@ -1059,11 +1072,8 @@ async function heapSort() {
 
 
 /* =========================================================
-   SEARCHING ALGORITHMS
-   ========================================================= */
-
-
-/* ================= LINEAR SEARCH ================= */
+   LINEAR SEARCH
+========================================================= */
 
 async function linearSearch(target) {
 
@@ -1074,20 +1084,19 @@ async function linearSearch(target) {
         i++
     ) {
 
-        bars[i].classList.add("compare");
+        bars[i]
+            .classList.add("compare");
 
         setStatus(
             `Checking index ${i} — value ${array[i]}`
         );
 
-        compare();
+        addComparison();
+        nextStep();
 
         await sleep(speedMs * 2);
 
-
-        if (
-            array[i] === target
-        ) {
+        if (array[i] === target) {
 
             bars[i]
                 .classList.remove("compare");
@@ -1101,7 +1110,6 @@ async function linearSearch(target) {
 
             return;
         }
-
 
         bars[i]
             .classList.remove("compare");
@@ -1120,14 +1128,13 @@ async function linearSearch(target) {
 }
 
 
-/* ================= BINARY SEARCH ================= */
+/* =========================================================
+   BINARY SEARCH
+========================================================= */
 
 async function binarySearch(target) {
 
-    /*
-       Binary Search requires sorted data.
-       Therefore we sort a copy first.
-    */
+    /* Binary Search requires sorted data */
 
     array.sort(
         (a, b) => a - b
@@ -1135,10 +1142,7 @@ async function binarySearch(target) {
 
     renderBars();
 
-    clearBarStates();
-
     updateArrayInfo();
-
 
     let low = 0;
 
@@ -1150,6 +1154,12 @@ async function binarySearch(target) {
         low <= high &&
         !stopRequested
     ) {
+
+        const mid =
+            Math.floor(
+                (low + high) / 2
+            );
+
 
         for (
             let i = 0;
@@ -1173,64 +1183,54 @@ async function binarySearch(target) {
         }
 
 
-        const middle =
-            Math.floor(
-                (low + high) / 2
-            );
-
-
-        bars[middle]
+        bars[mid]
             .classList.add("pivot");
 
 
         setStatus(
-            `Checking middle index ${middle} — value ${array[middle]}`
+            `Checking middle index ${mid} — value ${array[mid]}`
         );
 
+        addComparison();
+        nextStep();
 
-        compare();
-
-        await sleep(
-            speedMs * 3
-        );
+        await sleep(speedMs * 3);
 
 
         if (
-            array[middle] === target
+            array[mid] === target
         ) {
 
-            bars[middle]
+            bars[mid]
                 .classList.remove("pivot");
 
-            bars[middle]
+            bars[mid]
                 .classList.add("found");
 
             setStatus(
-                `Found ${target} at index ${middle}`
+                `Found ${target} at index ${mid}`
             );
 
             return;
         }
 
 
-        bars[middle]
+        bars[mid]
             .classList.remove("pivot");
 
-        bars[middle]
+        bars[mid]
             .classList.add("discarded");
 
 
         if (
-            array[middle] < target
+            array[mid] < target
         ) {
 
-            low =
-                middle + 1;
+            low = mid + 1;
 
         } else {
 
-            high =
-                middle - 1;
+            high = mid - 1;
         }
     }
 
@@ -1244,7 +1244,9 @@ async function binarySearch(target) {
 }
 
 
-/* ================= ALGORITHM MAP ================= */
+/* =========================================================
+   ALGORITHM MAPS
+========================================================= */
 
 const SORTERS = {
 
@@ -1271,116 +1273,13 @@ const SEARCHERS = {
 
 
 /* =========================================================
-   RUNNER
-   ========================================================= */
+   UPDATE ALGORITHM INFORMATION
+========================================================= */
 
-async function runAlgorithm() {
-
-    clearBarStates();
-
-    resetStatistics();
-
-    stopRequested = false;
-
-    isPlaying = true;
-
-    playBtn.disabled = true;
-
-    pauseBtn.disabled = false;
-
-    resetBtn.disabled = true;
-
+function updateAlgorithmInfo() {
 
     const meta =
         ALGO_META[currentAlgo];
-
-
-    if (
-        meta.type === "sort"
-    ) {
-
-        setStatus(
-            `Running ${meta.name}...`
-        );
-
-        await SORTERS[currentAlgo]();
-
-
-        if (!stopRequested) {
-
-            setStatus(
-                `${meta.name} complete`
-            );
-        }
-
-    } else {
-
-        const target =
-            array[
-                Math.floor(
-                    Math.random() *
-                    array.length
-                )
-            ];
-
-
-        searchTargetVal.textContent =
-            target;
-
-
-        setStatus(
-            `Running ${meta.name}...`
-        );
-
-
-        await SEARCHERS[currentAlgo](
-            target
-        );
-    }
-
-
-    isPlaying = false;
-
-    playBtn.disabled = false;
-
-    pauseBtn.disabled = true;
-
-    resetBtn.disabled = false;
-
-    pauseBtn.textContent =
-        "⏸ Pause";
-
-    isPaused = false;
-}
-
-
-/* =========================================================
-   ALGORITHM SELECTION
-   ========================================================= */
-
-function selectAlgo(
-    algo,
-    button
-) {
-
-    if (isPlaying) return;
-
-
-    currentAlgo = algo;
-
-
-    document
-        .querySelectorAll(".tab")
-        .forEach(tab =>
-            tab.classList.remove("active")
-        );
-
-
-    button.classList.add("active");
-
-
-    const meta =
-        ALGO_META[algo];
 
 
     cTime.textContent =
@@ -1388,6 +1287,10 @@ function selectAlgo(
 
     cSpace.textContent =
         meta.space;
+
+
+    visualizationTitle.textContent =
+        meta.name;
 
 
     infoType.textContent =
@@ -1398,7 +1301,6 @@ function selectAlgo(
 
     infoTitle.textContent =
         meta.name;
-
 
     infoDesc.textContent =
         meta.desc;
@@ -1423,19 +1325,38 @@ function selectAlgo(
         meta.how;
 
 
-    searchTargetWrap
-        .classList
-        .toggle(
-            "hidden",
-            meta.type !== "search"
+    searchTargetWrap.classList.toggle(
+        "hidden",
+        meta.type !== "search"
+    );
+}
+
+
+/* =========================================================
+   SELECT ALGORITHM
+========================================================= */
+
+function selectAlgo(algo, button) {
+
+    if (isPlaying) return;
+
+    currentAlgo = algo;
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(tab =>
+            tab.classList.remove("active")
         );
 
+    button.classList.add("active");
 
-    searchTargetVal.textContent =
-        "—";
-
+    updateAlgorithmInfo();
 
     clearBarStates();
+
+    searchTargetVal.textContent = "—";
+
+    resetCounters();
 
     setStatus(
         "Ready — press Play to begin"
@@ -1444,8 +1365,109 @@ function selectAlgo(
 
 
 /* =========================================================
-   BUTTON EVENTS
-   ========================================================= */
+   RUN ALGORITHM
+========================================================= */
+
+async function runAlgorithm() {
+
+    clearBarStates();
+
+    resetCounters();
+
+    stopRequested = false;
+
+    isPlaying = true;
+
+    isPaused = false;
+
+
+    playBtn.disabled = true;
+
+    pauseBtn.disabled = false;
+
+    resetBtn.disabled = true;
+
+
+    const meta =
+        ALGO_META[currentAlgo];
+
+
+    setStatus(
+        `Running ${meta.name}...`
+    );
+
+
+    if (meta.type === "sort") {
+
+        await SORTERS[currentAlgo]();
+
+        if (!stopRequested) {
+
+            setStatus(
+                `${meta.name} complete`
+            );
+        }
+
+    } else {
+
+        const target =
+            array[
+                Math.floor(
+                    Math.random() *
+                    array.length
+                )
+            ];
+
+
+        searchTargetVal.textContent =
+            target;
+
+
+        await SEARCHERS[currentAlgo](
+            target
+        );
+    }
+
+
+    isPlaying = false;
+
+    isPaused = false;
+
+    playBtn.disabled = false;
+
+    pauseBtn.disabled = true;
+
+    resetBtn.disabled = false;
+
+    pauseBtn.textContent =
+        "⏸ Pause";
+}
+
+
+/* =========================================================
+   TAB EVENTS
+========================================================= */
+
+document
+    .querySelectorAll(".tab")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                selectAlgo(
+                    button.dataset.algo,
+                    button
+                );
+            }
+        );
+    });
+
+
+/* =========================================================
+   PLAY
+========================================================= */
 
 playBtn.addEventListener(
     "click",
@@ -1470,12 +1492,15 @@ playBtn.addEventListener(
 );
 
 
+/* =========================================================
+   PAUSE
+========================================================= */
+
 pauseBtn.addEventListener(
     "click",
     () => {
 
         if (!isPlaying) return;
-
 
         isPaused =
             !isPaused;
@@ -1489,6 +1514,10 @@ pauseBtn.addEventListener(
 );
 
 
+/* =========================================================
+   RESET / NEW ARRAY
+========================================================= */
+
 resetBtn.addEventListener(
     "click",
     () => {
@@ -1499,18 +1528,23 @@ resetBtn.addEventListener(
 
         isPaused = false;
 
+
         playBtn.disabled = false;
 
         pauseBtn.disabled = true;
 
         resetBtn.disabled = false;
 
+
         pauseBtn.textContent =
             "⏸ Pause";
 
 
         generateArray(
-            Number(sizeSlider.value)
+            parseInt(
+                sizeSlider.value,
+                10
+            )
         );
 
 
@@ -1527,7 +1561,7 @@ resetBtn.addEventListener(
 
 /* =========================================================
    SIZE SLIDER
-   ========================================================= */
+========================================================= */
 
 sizeSlider.addEventListener(
     "input",
@@ -1540,7 +1574,14 @@ sizeSlider.addEventListener(
         if (!isPlaying) {
 
             generateArray(
-                Number(sizeSlider.value)
+                parseInt(
+                    sizeSlider.value,
+                    10
+                )
+            );
+
+            setStatus(
+                "New array generated"
             );
         }
     }
@@ -1548,36 +1589,8 @@ sizeSlider.addEventListener(
 
 
 /* =========================================================
-   SPEED
-   ========================================================= */
-
-const SPEED_LABELS = {
-
-    1: "Slowest",
-
-    2: "Slow",
-
-    3: "Normal",
-
-    4: "Fast",
-
-    5: "Fastest"
-};
-
-
-const SPEED_MS = {
-
-    1: 140,
-
-    2: 80,
-
-    3: 40,
-
-    4: 18,
-
-    5: 6
-};
-
+   SPEED SLIDER
+========================================================= */
 
 speedSlider.addEventListener(
     "input",
@@ -1588,7 +1601,6 @@ speedSlider.addEventListener(
                 speedSlider.value
             ];
 
-
         speedMs =
             SPEED_MS[
                 speedSlider.value
@@ -1598,54 +1610,27 @@ speedSlider.addEventListener(
 
 
 /* =========================================================
-   TAB EVENTS
-   ========================================================= */
-
-document
-    .querySelectorAll(".tab")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                selectAlgo(
-                    button.dataset.algo,
-                    button
-                );
-            }
-        );
-    });
-
-
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
+   INITIALIZE
+========================================================= */
 
 speedMs =
     SPEED_MS[
         speedSlider.value
     ];
 
-
 speedVal.textContent =
     SPEED_LABELS[
         speedSlider.value
     ];
 
-
 sizeVal.textContent =
     sizeSlider.value;
 
-
-selectAlgo(
-    "bubble",
-    document.querySelector(
-        '[data-algo="bubble"]'
-    )
-);
-
+updateAlgorithmInfo();
 
 generateArray(
-    Number(sizeSlider.value)
+    parseInt(
+        sizeSlider.value,
+        10
+    )
 );
